@@ -1,0 +1,18 @@
+#!/bin/sh
+
+if [ "$(id -u)" -ne 0 -o $# -lt 1 ]; then
+	echo "Error: Do not run this script manually; this is meant to be run by shandbox"
+	exit 1
+fi
+
+mount -t overlay overlay -o lowerdir=rootfs,upperdir=changes,workdir=work merged/
+cd merged/
+
+mkdir old_root
+pivot_root . old_root/
+cd /
+
+/bin/umount -l old_root/
+/bin/rmdir old_root/
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin exec $1
